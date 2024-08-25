@@ -12,10 +12,6 @@
 
 * [`PTY::IO`](#PTY--IO): The PTY::IO object represents an IO-object to communicate via the PTY. This object is created by the `pty::spawn()` function and passed to th
 
-### Plans
-
-* [`pty::test`](#pty--test)
-
 ## Functions
 
 ### <a name="pty--spawn"></a>`pty::spawn`
@@ -265,10 +261,4 @@ Returns: `Boolean`
 Data type: `Boolean`
 
 
-
-## Plans
-
-### <a name="pty--test"></a>`pty::test`
-
-The pty::test class.
 
