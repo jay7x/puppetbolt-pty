@@ -146,11 +146,8 @@ class PuppetX::PTY::IO
   # @return Undef if no typed char was echoed back
   def type_in(msg, opts = {})
     read(opts) # Flush input
-    echo = @output.echo?
-    @output.echo = true # Ensure echo is on on the pty
     msg.chars.each do |c|
       @output.putc c
-      debug_msg '|>', c
       loop do
         return nil unless @input.wait_readable(1) # Return Undef if timeout expired and no input here
         i = @input.getc
@@ -158,7 +155,6 @@ class PuppetX::PTY::IO
       end
     end
     debug_msg '|>', msg
-    @output.echo = echo
     @output.putc "\n"
     msg
   end
