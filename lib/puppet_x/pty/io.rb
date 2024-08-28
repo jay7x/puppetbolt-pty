@@ -130,6 +130,7 @@ class PuppetX::PTY::IO
     limit = opts.delete('limit') || 1
     interval = opts.delete('interval') || 10
     while limit > 0
+      debug_msg '..', "pwp_until() ##{limit} attempt(s) left"
       out = pwp(msg, opts)
       return out if out&.match? pattern
       sleep interval
