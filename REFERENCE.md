@@ -6,11 +6,11 @@
 
 ### Functions
 
-* [`pty::spawn`](#pty--spawn): Spawns the specified command on a newly allocated pty.
+* [`pty::spawn`](#pty--spawn): Spawns the specified command on a newly allocated pty
 
 ### Data types
 
-* [`PTY::IO`](#PTY--IO): The PTY::IO object represents an IO-object to communicate via the PTY. This object is created by the `pty::spawn()` function and passed to th
+* [`PTY::IO`](#PTY--IO): The PTY::IO data type represents an IO-object to communicate via the PTY. An instance of PTY::IO class is created by the `pty::spawn()` funct
 
 ## Functions
 
@@ -18,30 +18,14 @@
 
 Type: Ruby 4.x API
 
-This function is designed to be used in a Bolt plan. See PTY::IO
-DataType documentation for more details.
+Spawns the specified command on a newly allocated pty.
 
-**Note:** Not available in apply block.
-
-#### Examples
-
-##### Spawn /bin/sh and get the hostname
-
-```puppet
-pty::spawn(['/bin/sh', '--norc']) |$pty| {
-  $pty.puts('export PS1="pty::io$ "')
-  $pty.read()
-  $pty.set_expected_prompt(/\Rpty::io\$ /)
-  $hostname = $pty.pwp('hostname').strip()
-}
-```
+**NOTE:** This function is designed to be used in a Bolt plan (not available
+in `apply()` block). See PTY::IO DataType documentation for more details.
 
 #### `pty::spawn(Array[String[1]] $cmd, Callable[PTY::IO] &$block)`
 
-This function is designed to be used in a Bolt plan. See PTY::IO
-DataType documentation for more details.
-
-**Note:** Not available in apply block.
+Spawns the specified command on a newly allocated pty (block form).
 
 Returns: `Undef`
 
@@ -62,31 +46,75 @@ pty::spawn(['/bin/sh', '--norc']) |$pty| {
 
 Data type: `Array[String[1]]`
 
-The command to spawn
+The command to spawn.
 
 ##### `&block`
 
 Data type: `Callable[PTY::IO]`
 
-The code block, that is using PTY::IO object yielded to talk to the command executed
+The code block, that is using PTY::IO object yielded to talk to the
+command executed.
+
+#### `pty::spawn(Array[String[1]] $cmd)`
+
+Spawns the specified command on a newly allocated pty (non-block form).
+
+Returns: `PTY::IO` The PTY::IO object
+
+##### Examples
+
+###### Spawn /bin/sh and get the hostname
+
+```puppet
+$pty = pty::spawn(['/bin/sh', '--norc'])
+$pty.puts('export PS1="pty::io$ "')
+$pty.read()
+$pty.set_expected_prompt(/\Rpty::io\$ /)
+$hostname = $pty.pwp('hostname').strip()
+$pty.close()
+```
+
+##### `cmd`
+
+Data type: `Array[String[1]]`
+
+The command to spawn.
 
 ## Data types
 
 ### <a name="PTY--IO"></a>`PTY::IO`
 
-The PTY::IO object represents an IO-object to communicate via the PTY. This
-object is created by the `pty::spawn()` function and passed to the block
-yielded. It's not expected to be created manually.
+The PTY::IO data type represents an IO-object to communicate via the PTY.
+An instance of PTY::IO class is created by the `pty::spawn()` function. In a
+block form this object is passed to the block as its first parameter. In a
+non-block form it is returned by the function. This data type is not expected
+to be created manually.
 
 #### Functions
 
 The following functions are available in the `PTY::IO` data type.
 
+### <a name="check"></a>`check`
+
+#### `PTY::IO.check`
+
+Check if the process is alive.
+
+Returns: `Variant[Integer, Undef]`
+
+### <a name="close"></a>`close`
+
+#### `PTY::IO.close`
+
+Close streams and kill the process spawned.
+
+Returns: `Variant[Integer, Undef]`
+
 ### <a name="write"></a>`write`
 
 #### `PTY::IO.write(param1)`
 
-Send a message as-is
+Send a message as-is.
 
 Returns: `Integer`
 
@@ -100,7 +128,7 @@ Data type: `String[1]`
 
 #### `PTY::IO.puts(param1)`
 
-Send a message with terminating line feed appended
+Send a message with terminating line feed appended.
 
 Returns: `Undef`
 
@@ -114,7 +142,7 @@ Data type: `String`
 
 #### `PTY::IO.read(param1)`
 
-Read the input if any
+Read the input if any.
 
 Returns: `Variant[String, Undef]`
 
@@ -128,7 +156,7 @@ Data type: `Struct[{'maxlen' => Optional[Integer[0]], 'timeout' => Optional[Vari
 
 #### `PTY::IO.set_expected_prompt(param1)`
 
-Set the prompt to implicitly expect by `pwp()` and `pwp_until()` methods
+Set the prompt to implicitly expect by `pwp()` and `pwp_until()` methods.
 
 Returns: `Regexp`
 
@@ -142,7 +170,7 @@ Data type: `Variant[Regexp, String]`
 
 #### `PTY::IO.expect(param1, param2)`
 
-Wait for a pattern to appear (or until timeout expires)
+Wait for a pattern to appear (or until timeout expires).
 
 Returns: `Variant[String, Undef]`
 
@@ -162,7 +190,7 @@ Data type: `Struct[{'timeout' => Optional[Variant[Integer, Float]]}]`
 
 #### `PTY::IO.pwp(param1, param2)`
 
-Send a message, wait for the prompt and return the text received
+Send a message, wait for the prompt and return the text received.
 
 Returns: `Variant[String, Undef]`
 
@@ -182,7 +210,8 @@ Data type: `Struct[{'timeout' => Optional[Variant[Integer, Float]], 'keep_prompt
 
 #### `PTY::IO.pwp_until(param1, param2, param3)`
 
-Send the message, wait for the prompt, check for the pattern, repeat if not found
+Send the message, wait for the prompt, check for the pattern, repeat if not
+found.
 
 Returns: `Variant[String, Undef]`
 
@@ -208,7 +237,8 @@ Data type: `Struct[{'interval' => Optional[Variant[Integer[0], Float]], 'limit' 
 
 #### `PTY::IO.type_in(param1)`
 
-Send a message by typing a char and waiting for it to be echoed back by console before typing a next one
+Send a message by typing a char and waiting for it to be echoed back by
+console before typing a next one.
 
 Returns: `Variant[String, Undef]`
 
@@ -222,7 +252,7 @@ Data type: `String[1]`
 
 #### `PTY::IO.set_raw`
 
-Switch the pty to raw mode
+Switch the pty to raw mode.
 
 Returns: `Undef`
 
@@ -230,7 +260,7 @@ Returns: `Undef`
 
 #### `PTY::IO.set_cooked`
 
-Switch the pty to 'cooked' mode (default mode usually)
+Switch the pty to 'cooked' mode (default mode usually).
 
 Returns: `Undef`
 
@@ -238,7 +268,7 @@ Returns: `Undef`
 
 #### `PTY::IO.set_echo(param1)`
 
-Enable/disable echo on the pty
+Enable/disable echo on the pty.
 
 Returns: `Boolean`
 
@@ -252,7 +282,7 @@ Data type: `Boolean`
 
 #### `PTY::IO.set_debug(param1)`
 
-Enable/disable debug messages on stderr
+Enable/disable debug messages on stderr.
 
 Returns: `Boolean`
 

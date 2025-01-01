@@ -8,41 +8,48 @@
 
 ## Description
 
-The module provides resources to spawn a command on a PTY and to interact with it from Puppet DSL.
+The module provides resources to spawn a command on a PTY and to interact with
+it from Puppet DSL.
 
 ## Usage
 
-Use `pty::spawn()` function in a Bolt plan to spawn a command and yield a code block with a PTY::IO datatype parameter to interact with the process spawned.
+Use `pty::spawn()` function in a Bolt plan to spawn a command on a newly
+allocated PTY. In a block form, this function yields a PTY::IO object as a
+block parameter. When the function has no block, it'll return a PTY::IO object.
+Use the PTY::IO object to interact with the process spawned.
 
 ### Example 1. Talk to /bin/sh locally
 
 ```puppet
-  pty::spawn(['/bin/sh', '--norc']) |$pty| {
-    # Enable debug messages on stderr
-    $pty.set_debug(true)
-    # Switch PTY to raw mode
-    $pty.set_raw()
+  $pty = pty::spawn(['/bin/sh', '--norc'])
+  # Enable debug messages on stderr
+  $pty.set_debug(true)
+  # Switch PTY to raw mode
+  $pty.set_raw()
 
-    # Change PS1 prompt to something we know
-    $pty.puts('export PS1="pty::io$ "')
-    # Read reply and throw it away (wait 0.5 second for more input if any)
-    $pty.read(timeout => 0.5)
+  # Change PS1 prompt to something we know
+  $pty.puts('export PS1="pty::io$ "')
+  # Read reply and throw it away (wait 0.5 second for more input if any)
+  $pty.read(timeout => 0.5)
 
-    # Set the prompt to be expected by `pwp()` and `pwp_until()` methods
-    $pty.set_expected_prompt(/\Rpty::io\$ /)
+  # Set the prompt to be expected by `pwp()` and `pwp_until()` methods
+  $pty.set_expected_prompt(/\Rpty::io\$ /)
 
-    # Send `hostname` command, get reply and strip any whitespace including terminating '\n'
-    $hostname = $pty.pwp('hostname').strip()
-    out::verbose($hostname)
+  # Send `hostname` command, get reply and strip any whitespace including
+  # terminating '\n'
+  $hostname = $pty.pwp('hostname').strip()
+  out::verbose($hostname)
 
-    # Type '# Hello world'
-    out::verbose($pty.type_in('# Hello world'))
+  # Type '# Hello world'
+  out::verbose($pty.type_in('# Hello world'))
 
-    # Print current unix time and check if last digit is 0. Repeat 11 times if
-    not, waiting 1 sec before next iteration. Return unix time matching.
-    $time = $pty.pwp_until('date +"%s"', /0$/, { interval => 1, limit => 11 }).strip()
-    out::verbose($time)
-  }
+  # Print current unix time and check if last digit is 0. Repeat 11 times if
+  # not, waiting 1 sec before next iteration. Return unix time matching.
+  $time = $pty.pwp_until('date +"%s"', /0$/, { interval => 1, limit => 11 }).strip()
+  out::verbose($time)
+
+  # Close IO streams and kill the process
+  $pty.close()
 ```
 
 ### Example 2. Configure remote iDRAC via SSH
@@ -61,10 +68,14 @@ risk!
       $bmc.set_expected_prompt(/\Rracadm>>/)
       $bmc.pwp('racadm') # Not needed on newer iDRAC but does no real harm
 
-      $bmc.pwp('set iDRAC.VirtualConsole.PluginType HTML5')            # Use HTML5 VirtualConsole
-      # BIOS setup
-      $bmc.pwp('set BIOS.ProcSettings.LogicalProc Disabled')           # Disable HyperThreading
-      $bmc.pwp('set BIOS.SysProfileSettings.SysProfile PerfOptimized') # Use PerfOptimized system profile
+      # Use HTML5 VirtualConsole
+      $bmc.pwp('set iDRAC.VirtualConsole.PluginType HTML5')
+
+      ## BIOS setup
+      # Disable HyperThreading
+      $bmc.pwp('set BIOS.ProcSettings.LogicalProc Disabled')
+      # Use PerfOptimized system profile
+      $bmc.pwp('set BIOS.SysProfileSettings.SysProfile PerfOptimized')
 
       # Create job to setup BIOS on reboot
       $bios_setup_jid = $bmc.pwp('jobqueue create BIOS.Setup.1-1') ? {
@@ -87,7 +98,7 @@ risk!
 
 ## Reference
 
-For detailed information on functions and types, see [REFERENCE.md](https://github.com/jay7x/puppet-pty/blob/main/REFERENCE.md).
+For detailed information on functions and types, see [REFERENCE.md](https://github.com/jay7x/puppetbolt-pty/blob/main/REFERENCE.md).
 
 ## License
 
