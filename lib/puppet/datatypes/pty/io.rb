@@ -1,37 +1,48 @@
 # frozen_string_literal: true
 
-# The PTY::IO object represents an IO-object to communicate via the PTY. This
-# object is created by the `pty::spawn()` function and passed to the block
-# yielded. It's not expected to be created manually.
+# The PTY::IO data type represents an IO-object to communicate via the PTY.
+# An instance of PTY::IO class is created by the `pty::spawn()` function. In a
+# block form this object is passed to the block as its first parameter. In a
+# non-block form it is returned by the function. This data type is not expected
+# to be created manually.
 #
+# @method check
+#   Check if the process is alive.
+# @method close
+#   Close streams and kill the process spawned.
 # @method write(msg)
-#   Send a message as-is
+#   Send a message as-is.
 # @method puts(msg)
-#   Send a message with terminating line feed appended
+#   Send a message with terminating line feed appended.
 # @method read(opts)
-#   Read the input if any
+#   Read the input if any.
 # @method set_expected_prompt(prompt)
-#   Set the prompt to implicitly expect by `pwp()` and `pwp_until()` methods
+#   Set the prompt to implicitly expect by `pwp()` and `pwp_until()` methods.
 # @method expect(pattern, opts)
-#   Wait for a pattern to appear (or until timeout expires)
+#   Wait for a pattern to appear (or until timeout expires).
 # @method pwp(msg, opts)
-#   Send a message, wait for the prompt and return the text received
+#   Send a message, wait for the prompt and return the text received.
 # @method pwp_until(msg, prompt, opts)
-#   Send the message, wait for the prompt, check for the pattern, repeat if not found
+#   Send the message, wait for the prompt, check for the pattern, repeat if not
+#   found.
 # @method type_in(msg, opts)
-#   Send a message by typing a char and waiting for it to be echoed back by console before typing a next one
+#   Send a message by typing a char and waiting for it to be echoed back by
+#   console before typing a next one.
 # @method set_raw
-#   Switch the pty to raw mode
+#   Switch the pty to raw mode.
 # @method set_cooked
-#   Switch the pty to 'cooked' mode (default mode usually)
+#   Switch the pty to 'cooked' mode (default mode usually).
 # @method set_echo(echo)
-#   Enable/disable echo on the pty
+#   Enable/disable echo on the pty.
 # @method set_debug(debug)
-#   Enable/disable debug messages on stderr
+#   Enable/disable debug messages on stderr.
+#
 Puppet::DataTypes.create_type(:'PTY::IO') do
   interface <<-PUPPET
     attributes => {},
     functions => {
+      check => Callable[[], Variant[Integer, Undef]],
+      close => Callable[[], Variant[Integer, Undef]],
       write => Callable[[String[1]], Integer],
       puts => Callable[[String], Undef],
       read => Callable[[

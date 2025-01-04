@@ -12,15 +12,19 @@ class PuppetX::PTY::IO
   def initialize
     @input = nil
     @output = nil
+    @pid = nil
     @prompt = nil
     @debug = false
   end
 
-  # Set the input & output streams. Used by `pty::spawn` function.
+  # Set the input, output and pid parameters. Used by `pty::spawn` function.
   # @api private
-  def set_streams(input, output)
+  def private_init(input, output, pid)
     @input = input
     @output = output
+    @pid = pid
+
+    self
   end
 
   # Enable/disable debug messages on stderr
@@ -158,6 +162,24 @@ class PuppetX::PTY::IO
     debug_msg '|>', msg
     @output.putc "\n"
     msg
+  end
+
+  # Check the process status
+  # @return Undef if process is alive
+  # @return Process exit status if exited
+  def check
+    ps = PTY.check(@pid, false)
+    ps&.to_i
+  end
+
+  # Close the streams and kill the process spawned
+  # @return Process exit status
+  def close
+    @input.close
+    @output.close
+    Process.kill('TERM', @pid)
+    (_, status) = Process.wait2(@pid)
+    status&.to_i
   end
 
   private
