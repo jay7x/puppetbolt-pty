@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
-require 'puppet_x/pty'
 require 'io/console'
 require 'io/wait'
 require 'expect'
+
+# Defined PuppetX namespace
+module PuppetX; end
+# Defined PuppetX::PTY namespace
+module PuppetX::PTY; end
 
 # Wrapper class for the pty interaction
 # @method write Write a string as is
