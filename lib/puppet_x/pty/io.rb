@@ -158,7 +158,7 @@ class PuppetX::PTY::IO
     msg.chars.each do |c|
       @output.putc c
       loop do
-        return nil unless @input.wait_readable(1) # Return Undef if timeout expired and no input here
+        return nil unless @input.wait_readable(30) # Return Undef if timeout expired and no input here
         i = @input.getc
         break if i == c
       end
