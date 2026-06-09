@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
-require 'puppet_x/pty'
 require 'io/console'
 require 'io/wait'
 require 'expect'
+
+# Defined PuppetX namespace
+module PuppetX; end
+# Defined PuppetX::PTY namespace
+module PuppetX::PTY; end
 
 # Wrapper class for the pty interaction
 # @method write Write a string as is
@@ -154,7 +158,7 @@ class PuppetX::PTY::IO
     msg.chars.each do |c|
       @output.putc c
       loop do
-        return nil unless @input.wait_readable(1) # Return Undef if timeout expired and no input here
+        return nil unless @input.wait_readable(30) # Return Undef if timeout expired and no input here
         i = @input.getc
         break if i == c
       end

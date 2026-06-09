@@ -18,7 +18,9 @@ Puppet::Functions.create_function(:'pty::spawn') do
   #   The command to spawn.
   # @param block
   #   The code block, that is using PTY::IO object yielded to talk to the
-  #   command executed.
+  #   command executed. The process executed will be SIGTERM-ed and waited on
+  #   block exit.
+  # @return Block result.
   #
   # @example Spawn /bin/sh and get the hostname
   #   pty::spawn(['/bin/sh', '--norc']) |$pty| {
@@ -31,14 +33,14 @@ Puppet::Functions.create_function(:'pty::spawn') do
   dispatch :spawn_with_block do
     param 'Array[String[1]]', :cmd
     block_param 'Callable[PTY::IO]', :block
-    return_type 'Undef'
+    return_type 'Any'
   end
 
   # Spawns the specified command on a newly allocated pty (non-block form).
   #
   # @param cmd
   #   The command to spawn.
-  # @return The PTY::IO object
+  # @return The PTY::IO object.
   #
   # @example Spawn /bin/sh and get the hostname
   #   $pty = pty::spawn(['/bin/sh', '--norc'])
@@ -56,12 +58,10 @@ Puppet::Functions.create_function(:'pty::spawn') do
   def spawn_with_block(cmd)
     fail_if_not_in_plan
 
-    PTY.spawn(*cmd) do |input, output, pid|
-      pty_io = PuppetX::PTY::IO.new
-      pty_io.private_init(input, output, pid)
-      yield pty_io
-    end
-    nil
+    pty_io = spawn(cmd)
+    yield pty_io
+  ensure
+    pty_io&.close
   end
 
   def spawn(cmd)
